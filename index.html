@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>赛博墓碑</title>
+  <style>
+    :root {
+      --ink: #171717;
+      --paper: #f2f2ef;
+      --stone: #d7d9d2;
+      --stone-dark: #8d9388;
+      --red: #b82f34;
+      --green: #24766b;
+      --gold: #c89431;
+      --line: rgba(23, 23, 23, 0.16);
+      --shadow: 0 18px 60px rgba(23, 23, 23, 0.17);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background:
+        linear-gradient(90deg, rgba(23, 23, 23, 0.035) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(23, 23, 23, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 32px 32px;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, calc(100vw - 32px));
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 0;
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .console,
+    .stage {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.78);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .console {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 48px);
+    }
+
+    .console-head {
+      padding: 20px 20px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .brandline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 54px);
+      line-height: 0.96;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #ffffff;
+      background: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .subcopy {
+      color: rgba(23, 23, 23, 0.72);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .form {
+      padding: 18px 20px 16px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label,
+    .field-title {
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--ink);
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(36, 118, 107, 0.14);
+    }
+
+    input,
+    select {
+      min-height: 42px;
+      padding: 0 12px;
+    }
+
+    textarea {
+      min-height: 112px;
+      resize: vertical;
+      padding: 12px;
+      line-height: 1.55;
+    }
+
+    .modes {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .mode {
+      min-width: 0;
+      min-height: 42px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: transparent;
+      color: rgba(23, 23, 23, 0.7);
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .mode:last-child {
+      border-right: 0;
+    }
+
+    .mode.is-active {
+      color: #ffffff;
+      background: var(--ink);
+    }
+
+    .range-row {
+      display: grid;
+      grid-template-columns: 1fr 46px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: var(--red);
+    }
+
+    .range-value {
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      background: #ffffff;
+      color: var(--red);
+      font-weight: 900;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 10px;
+    }
+
+    .primary,
+    .secondary,
+    .danger {
+      min-height: 46px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      font-weight: 900;
+    }
+
+    .primary {
+      color: #ffffff;
+      background: var(--red);
+      border-color: rgba(184, 47, 52, 0.35);
+    }
+
+    .secondary {
+      color: var(--ink);
+      background: #ffffff;
+    }
+
+    .danger {
+      color: #ffffff;
+      background: var(--ink);
+    }
+
+    .ritual {
+      margin-top: auto;
+      border-top: 1px solid var(--line);
+      background: #ffffff;
+      padding: 16px 20px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .ritual-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ritual-title {
+      font-weight: 900;
+      font-size: 15px;
+    }
+
+    .timer {
+      display: inline-grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      color: var(--ink);
+      background:
+        conic-gradient(var(--gold) calc(var(--progress, 0) * 1%), rgba(23, 23, 23, 0.12) 0),
+        #ffffff;
+      border: 1px solid var(--line);
+      font-weight: 950;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ritual-line {
+      min-height: 42px;
+      color: rgba(23, 23, 23, 0.72);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .stage {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      grid-template-rows: minmax(440px, 1fr) auto;
+      position: relative;
+      isolation: isolate;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.72)),
+        #e7e8e1;
+    }
+
+    #ritualCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .stage-inner {
+      position: relative;
+      z-index: 1;
+      min-height: 100%;
+      padding: 26px;
+      display: grid;
+      grid-template-columns: minmax(250px, 1fr) minmax(220px, 320px);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .monument-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 420px;
+    }
+
+    .monument {
+      width: min(420px, 100%);
+      aspect-ratio: 0.72;
+      position: relative;
+      display: grid;
+      place-items: end center;
+      filter: drop-shadow(0 28px 32px rgba(23, 23, 23, 0.22));
+      transform: translateY(0) rotate(0);
+      transition: transform 420ms ease;
+    }
+
+    .monument.is-struck {
+      transform: translateY(-2px) rotate(-0.8deg);
+    }
+
+    .stone {
+      width: 74%;
+      height: 84%;
+      border-radius: 42% 42% 8px 8px / 24% 24% 8px 8px;
+      border: 1px solid rgba(23, 23, 23, 0.22);
+      background:
+        radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.74), transparent 20%),
+        linear-gradient(140deg, #eef0e9 0%, var(--stone) 54%, #b9beb2 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(80deg, transparent 0 44%, rgba(23, 23, 23, 0.08) 45% 46%, transparent 47%),
+        linear-gradient(130deg, transparent 0 58%, rgba(23, 23, 23, 0.1) 59% 60%, transparent 61%);
+      opacity: 0.75;
+    }
+
+    .stone::after {
+      content: "";
+      position: absolute;
+      left: 11%;
+      right: 11%;
+      bottom: 11%;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(23, 23, 23, 0.16);
+      filter: blur(7px);
+    }
+
+    .seal {
+      position: absolute;
+      top: 13%;
+      left: 50%;
+      transform: translateX(-50%) rotate(-8deg);
+      width: 76px;
+      height: 76px;
+      border: 4px solid var(--red);
+      color: var(--red);
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      font-weight: 950;
+      font-size: 28px;
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .epitaph {
+      position: absolute;
+      inset: 30% 13% 14%;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 10px;
+      text-align: center;
+      z-index: 2;
+      min-width: 0;
+    }
+
+    .case-id {
+      color: rgba(23, 23, 23, 0.58);
+      font-size: 13px;
+      font-weight: 850;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .verdict {
+      color: var(--ink);
+      font-size: clamp(22px, 3vw, 34px);
+      line-height: 1.05;
+      font-weight: 950;
+      word-break: break-word;
+    }
+
+    .epitaph-body {
+      align-self: center;
+      color: rgba(23, 23, 23, 0.78);
+      font-size: clamp(14px, 1.5vw, 17px);
+      line-height: 1.65;
+      word-break: break-word;
+    }
+
+    .sentence {
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .base {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      bottom: 0;
+      height: 16%;
+      border: 1px solid rgba(23, 23, 23, 0.22);
+      border-radius: 8px 8px 2px 2px;
+      background:
+        linear-gradient(180deg, #c9cdbf, var(--stone-dark));
+    }
+
+    .base::after {
+      content: "";
+      position: absolute;
+      left: 8%;
+      right: 8%;
+      bottom: -13px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(23, 23, 23, 0.25);
+      filter: blur(8px);
+    }
+
+    .ticker {
+      align-self: stretch;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.76);
+      overflow: hidden;
+    }
+
+    .ticker-head {
+      min-height: 48px;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 950;
+    }
+
+    .score {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 999px;
+      color: #ffffff;
+      background: var(--red);
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .stat-list {
+      display: grid;
+      gap: 1px;
+      background: var(--line);
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 10px;
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.86);
+      min-width: 0;
+    }
+
+    .stat b {
+      font-size: 12px;
+      color: rgba(23, 23, 23, 0.58);
+    }
+
+    .stat span {
+      min-width: 0;
+      color: rgba(23, 23, 23, 0.82);
+      word-break: break-word;
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .graveyard {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--line);
+      background: #ffffff;
+      padding: 14px;
+    }
+
+    .graveyard-top {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .graveyard h2 {
+      font-size: 16px;
+      font-weight: 950;
+    }
+
+    .small-button {
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: rgba(23, 23, 23, 0.76);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .entries {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .entry {
+      min-height: 90px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f8f8f6;
+      padding: 10px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 6px;
+    }
+
+    .entry-title {
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .entry-copy {
+      color: rgba(23, 23, 23, 0.76);
+      font-size: 12px;
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-time {
+      color: rgba(23, 23, 23, 0.48);
+      font-size: 11px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      min-height: 90px;
+      border: 1px dashed rgba(23, 23, 23, 0.22);
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      color: rgba(23, 23, 23, 0.5);
+      font-weight: 850;
+      background: #fafafa;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        width: min(680px, calc(100vw - 24px));
+      }
+
+      .console,
+      .stage {
+        min-height: auto;
+      }
+
+      .stage-inner {
+        grid-template-columns: 1fr;
+        padding: 18px;
+      }
+
+      .ticker {
+        align-self: auto;
+      }
+
+      .entries {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .app {
+        width: calc(100vw - 18px);
+        padding: 9px 0;
+        gap: 10px;
+      }
+
+      .console-head,
+      .form,
+      .ritual {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .brandline {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status-pill {
+        white-space: normal;
+      }
+
+      .modes {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .mode {
+        border-bottom: 1px solid var(--line);
+      }
+
+      .mode:nth-child(3) {
+        border-right: 0;
+      }
+
+      .mode:nth-child(n + 4) {
+        border-bottom: 0;
+      }
+
+      .action-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        grid-template-rows: auto auto;
+      }
+
+      .stage-inner {
+        padding: 12px;
+      }
+
+      .monument-wrap {
+        min-height: 360px;
+      }
+
+      .monument {
+        width: min(330px, 95%);
+      }
+
+      .stat {
+        grid-template-columns: 74px 1fr;
+      }
+
+      .entries {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="console" aria-label="立碑控制台">
+      <header class="console-head">
+        <div class="brandline">
+          <h1>赛博墓碑</h1>
+          <span class="status-pill">本地私密</span>
+        </div>
+        <p class="subcopy">把荒谬封存，把注意力领回。只留代号，不留真人。</p>
+      </header>
+
+      <form class="form" id="tombForm">
+        <div class="field">
+          <label for="target">事件代号</label>
+          <input id="target" name="target" maxlength="28" autocomplete="off" placeholder="比如：会议里抢话的人" />
+        </div>
+
+        <div class="field">
+          <label for="incident">案情摘要</label>
+          <textarea id="incident" name="incident" maxlength="180" placeholder="一句话写完，不给它第二次生命。"></textarea>
+        </div>
+
+        <div class="field">
+          <div class="field-title">判词口吻</div>
+          <div class="modes" role="group" aria-label="判词口吻">
+            <button class="mode is-active" type="button" data-mode="冷判">冷判</button>
+            <button class="mode" type="button" data-mode="阴阳">阴阳</button>
+            <button class="mode" type="button" data-mode="禅意">禅意</button>
+            <button class="mode" type="button" data-mode="荒诞">荒诞</button>
+            <button class="mode" type="button" data-mode="极简">极简</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="charge">报应方式</label>
+          <select id="charge" name="charge">
+            <option value="注意力销户">注意力销户</option>
+            <option value="逻辑回弹">逻辑回弹</option>
+            <option value="当场静音">当场静音</option>
+            <option value="尘埃归档">尘埃归档</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="field-title">荒谬指数</div>
+          <div class="range-row">
+            <input id="absurdity" name="absurdity" type="range" min="1" max="10" value="6" />
+            <output class="range-value" id="absurdityValue" for="absurdity">6</output>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="primary" type="submit">立碑</button>
+          <button class="secondary" type="button" id="recoverButton">回收注意力</button>
+        </div>
+      </form>
+
+      <aside class="ritual" aria-label="回收仪式">
+        <div class="ritual-top">
+          <div>
+            <p class="ritual-title">注意力余额</p>
+            <p class="subcopy" id="balanceText">今天还没被扣款。</p>
+          </div>
+          <div class="timer" id="timer" style="--progress: 0">12</div>
+        </div>
+        <p class="ritual-line" id="ritualLine">判完就走，别在原地继续交税。</p>
+      </aside>
+    </section>
+
+    <section class="stage" aria-label="碑文舞台">
+      <canvas id="ritualCanvas"></canvas>
+      <div class="stage-inner">
+        <div class="monument-wrap">
+          <article class="monument" id="monument" aria-live="polite">
+            <div class="stone">
+              <div class="seal">封</div>
+              <div class="epitaph">
+                <div class="case-id" id="caseId">未立案</div>
+                <div class="verdict" id="verdict">今日不接荒谬</div>
+                <div class="epitaph-body" id="epitaphBody">此处等待一件值得被立刻归档的小破事。</div>
+                <div class="sentence" id="sentence">处置：注意力保全</div>
+              </div>
+            </div>
+            <div class="base"></div>
+          </article>
+        </div>
+
+        <aside class="ticker" aria-label="判决记录">
+          <div class="ticker-head">
+            <span>即时判决</span>
+            <span class="score" id="score">0</span>
+          </div>
+          <div class="stat-list">
+            <div class="stat">
+              <b>罪名</b>
+              <span id="chargeText">浪费他人清明</span>
+            </div>
+            <div class="stat">
+              <b>刑期</b>
+              <span id="termText">在我的脑内被静音至明日零点</span>
+            </div>
+            <div class="stat">
+              <b>返还</b>
+              <span id="returnText">把三分钟心力退回本人账户</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <section class="graveyard" aria-label="碑林">
+        <div class="graveyard-top">
+          <h2>今日碑林</h2>
+          <button class="small-button" type="button" id="clearButton">清空</button>
+        </div>
+        <div class="entries" id="entries"></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#tombForm");
+    const targetInput = document.querySelector("#target");
+    const incidentInput = document.querySelector("#incident");
+    const chargeSelect = document.querySelector("#charge");
+    const absurdityInput = document.querySelector("#absurdity");
+    const absurdityValue = document.querySelector("#absurdityValue");
+    const modeButtons = [...document.querySelectorAll(".mode")];
+    const monument = document.querySelector("#monument");
+    const caseId = document.querySelector("#caseId");
+    const verdict = document.querySelector("#verdict");
+    const epitaphBody = document.querySelector("#epitaphBody");
+    const sentence = document.querySelector("#sentence");
+    const score = document.querySelector("#score");
+    const chargeText = document.querySelector("#chargeText");
+    const termText = document.querySelector("#termText");
+    const returnText = document.querySelector("#returnText");
+    const entries = document.querySelector("#entries");
+    const clearButton = document.querySelector("#clearButton");
+    const recoverButton = document.querySelector("#recoverButton");
+    const timer = document.querySelector("#timer");
+    const ritualLine = document.querySelector("#ritualLine");
+    const balanceText = document.querySelector("#balanceText");
+    const canvas = document.querySelector("#ritualCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const STORAGE_KEY = "cyber-tombstone-entries-v1";
+    const maxEntries = 6;
+    let currentMode = "冷判";
+    let history = loadEntries();
+    let particles = [];
+    let ritualInterval = null;
+
+    const templates = {
+      冷判: [
+        "此事因缺乏基本逻辑，已从我的注意力系统中注销。",
+        "经审理，荒谬成立；经核算，不值得续费。",
+        "该行为不具备进入我今日情绪预算的资格。"
+      ],
+      阴阳: [
+        "能把简单事情办成这样，也算一种反向天赋。",
+        "感谢展示低效样本，现已封存，概不返场。",
+        "此等操作过于珍贵，建议永久陈列在别人的脑内。"
+      ],
+      禅意: [
+        "风吹过石头，石头不解释；我也不解释。",
+        "荒谬来时看见它，荒谬走时不送它。",
+        "一念立碑，一念归身。此事到此为止。"
+      ],
+      荒诞: [
+        "今日有一只坏掉的闹钟宣布自己是太阳，现已收进抽屉。",
+        "此案由三分废话、两分自信、一分离谱构成，配方完整。",
+        "荒谬指数达标，准予进入电子坟场接受静默展览。"
+      ],
+      极简: [
+        "已阅。已葬。",
+        "不配占内存。",
+        "封存，退订。"
+      ]
+    };
+
+    const charges = {
+      注意力销户: {
+        charge: "偷取他人注意力",
+        term: "在我的脑内被销户，余额清零",
+        refund: "退回一整段清净",
+        sentence: "处置：注意力销户"
+      },
+      逻辑回弹: {
+        charge: "逻辑欠费",
+        term: "所有离谱自证其离谱",
+        refund: "把解释欲原路退回",
+        sentence: "处置：逻辑回弹"
+      },
+      当场静音: {
+        charge: "噪声超标",
+        term: "静音至下一个好心情出现",
+        refund: "把耳朵和心都还给本人",
+        sentence: "处置：当场静音"
+      },
+      尘埃归档: {
+        charge: "制造无效尘埃",
+        term: "归档于不必再想分区",
+        refund: "返还三分钟生命",
+        sentence: "处置：尘埃归档"
+      }
+    };
+
+    function loadEntries() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveEntries() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(0, maxEntries)));
+    }
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function sanitize(value, fallback) {
+      const trimmed = value.trim().replace(/\s+/g, " ");
+      return trimmed || fallback;
+    }
+
+    function makeCaseNumber() {
+      const now = new Date();
+      const date = `${now.getMonth() + 1}`.padStart(2, "0") + `${now.getDate()}`.padStart(2, "0");
+      const serial = String(Math.floor(Math.random() * 900) + 100);
+      return `CASE-${date}-${serial}`;
+    }
+
+    function createVerdict({ target, incident, mode, charge, absurdity }) {
+      const chargeInfo = charges[charge];
+      const patience = Math.max(1, Math.round(absurdity * 0.8 + incident.length / 36));
+      const headlinePool = [
+        `${target}之墓`,
+        `此处安放：${target}`,
+        `荒谬已封存`,
+        `今日不再审理`
+      ];
+
+      return {
+        id: makeCaseNumber(),
+        title: pick(headlinePool),
+        body: pick(templates[mode]),
+        detail: incident,
+        charge: chargeInfo.charge,
+        term: chargeInfo.term,
+        refund: chargeInfo.refund,
+        sentence: `${chargeInfo.sentence}｜享年 ${patience} 分钟耐心`,
+        score: absurdity
+      };
+    }
+
+    function applyVerdict(record) {
+      caseId.textContent = record.id;
+      verdict.textContent = record.title;
+      epitaphBody.textContent = record.body;
+      sentence.textContent = record.sentence;
+      score.textContent = record.score;
+      chargeText.textContent = record.charge;
+      termText.textContent = record.term;
+      returnText.textContent = record.refund;
+      balanceText.textContent = `已追回 ${record.score * 3} 点注意力。`;
+      ritualLine.textContent = "判决完成。你的大脑无需继续出庭。";
+      monument.classList.remove("is-struck");
+      requestAnimationFrame(() => monument.classList.add("is-struck"));
+      setTimeout(() => monument.classList.remove("is-struck"), 520);
+    }
+
+    function renderEntries() {
+      entries.innerHTML = "";
+
+      if (history.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "空碑林，清净很好。";
+        entries.append(empty);
+        return;
+      }
+
+      history.forEach((item) => {
+        const entry = document.createElement("article");
+        entry.className = "entry";
+
+        const title = document.createElement("div");
+        title.className = "entry-title";
+        title.textContent = item.title;
+
+        const copy = document.createElement("div");
+        copy.className = "entry-copy";
+        copy.textContent = item.detail || item.body;
+
+        const time = document.createElement("div");
+        time.className = "entry-time";
+        time.textContent = item.time;
+
+        entry.append(title, copy, time);
+        entries.append(entry);
+      });
+    }
+
+    function burst(power = 1) {
+      const rect = canvas.getBoundingClientRect();
+      const originX = rect.width * 0.48;
+      const originY = rect.height * 0.48;
+
+      for (let i = 0; i < 90 * power; i += 1) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.2 + Math.random() * 5.4;
+        particles.push({
+          x: originX + (Math.random() - 0.5) * 80,
+          y: originY + (Math.random() - 0.5) * 120,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.6,
+          life: 54 + Math.random() * 36,
+          max: 90,
+          size: 2 + Math.random() * 4,
+          color: Math.random() > 0.46 ? "#b82f34" : Math.random() > 0.5 ? "#c89431" : "#171717"
+        });
+      }
+    }
+
+    function sizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function animate() {
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      particles = particles.filter((particle) => particle.life > 0);
+
+      particles.forEach((particle) => {
+        particle.life -= 1;
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += 0.06;
+        particle.vx *= 0.985;
+        const alpha = Math.max(0, particle.life / particle.max);
+
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = particle.color;
+        ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+      });
+
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
+    }
+
+    function startRecovery() {
+      clearInterval(ritualInterval);
+      let left = 12;
+      const lines = [
+        "吸气：我看见它很荒谬。",
+        "停住：它不值得住进我脑子。",
+        "呼气：我把这段注意力领回来。"
+      ];
+
+      timer.textContent = left;
+      timer.style.setProperty("--progress", 0);
+      ritualLine.textContent = lines[0];
+
+      ritualInterval = setInterval(() => {
+        left -= 1;
+        const passed = 12 - left;
+        timer.textContent = Math.max(0, left);
+        timer.style.setProperty("--progress", Math.round((passed / 12) * 100));
+        ritualLine.textContent = lines[Math.min(lines.length - 1, Math.floor(passed / 4))];
+
+        if (left <= 0) {
+          clearInterval(ritualInterval);
+          ritualLine.textContent = "回收完成。下一件事由你决定。";
+          balanceText.textContent = "注意力已回到账户。";
+          burst(0.45);
+        }
+      }, 1000);
+    }
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        currentMode = button.dataset.mode;
+        modeButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+      });
+    });
+
+    absurdityInput.addEventListener("input", () => {
+      absurdityValue.textContent = absurdityInput.value;
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const target = sanitize(targetInput.value, "某个荒谬瞬间");
+      const incident = sanitize(incidentInput.value, "它试图占用我的注意力，但失败了。");
+      const record = createVerdict({
+        target,
+        incident,
+        mode: currentMode,
+        charge: chargeSelect.value,
+        absurdity: Number(absurdityInput.value)
+      });
+
+      record.detail = incident;
+      record.time = new Date().toLocaleTimeString("zh-CN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      history = [record, ...history].slice(0, maxEntries);
+      saveEntries();
+      applyVerdict(record);
+      renderEntries();
+      burst(1);
+    });
+
+    clearButton.addEventListener("click", () => {
+      history = [];
+      saveEntries();
+      renderEntries();
+      balanceText.textContent = "碑林已清空。";
+      ritualLine.textContent = "空出来的地方，留给自己。";
+      burst(0.28);
+    });
+
+    recoverButton.addEventListener("click", startRecovery);
+    window.addEventListener("resize", sizeCanvas);
+
+    renderEntries();
+    sizeCanvas();
+    animate();
+  </script>
+</body>
+</html>
